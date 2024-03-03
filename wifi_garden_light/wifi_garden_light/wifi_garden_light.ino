@@ -22,6 +22,7 @@ void setup() {
 
   mqttClient.setUsernamePassword(MQTT_USER, MQTT_PASS);
 
+  Serial.println("Attempting to connect to mqtt broker");
   if (!mqttClient.connect(BROKER, port)) {
     Serial.print("Failure to connect to MQTT Broker: ");
     Serial.println(mqttClient.connectError());
@@ -35,23 +36,21 @@ void loop() {
   // put your main code here, to run repeatedly:
   mqttClient.poll();
   if(mqttClient.available()){
-    mqttClient.read();
+    Serial.println(mqttClient.read());
   }
 
-  delay(10000);
+  delay(1000);
 
   int resistance_1 = analogRead(A0);
   int resistance_2 = analogRead(A1);
   int average_resistance = (resistance_1 + resistance_2) / 2;
 
-  Serial.print("Resistor 1:\t");
-  Serial.print(resistance_1);
-  Serial.print("\tResistor 2:\t");
-  Serial.print(resistance_2);
-  Serial.print("\tAvg:\t");
+  Serial.print("Avg:\t");
   Serial.println(average_resistance);
 
   mqttClient.beginMessage(light_topic);
+  mqttClient.print("{\nresistance: ");
   mqttClient.println(average_resistance);
+  mqttClient.print("}");
   mqttClient.endMessage();
 }
