@@ -49,7 +49,7 @@ void loop() {
   Serial.println(average_resistance);
 
   mqttClient.beginMessage(light_topic);
-  mqttClient.print("{\nresistance: ");
+  mqttClient.print("{\n\"resistance\": ");
   mqttClient.println(average_resistance);
   mqttClient.print("}");
   mqttClient.endMessage();
