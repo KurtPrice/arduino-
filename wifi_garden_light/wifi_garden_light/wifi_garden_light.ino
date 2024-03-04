@@ -1,5 +1,6 @@
 #include <WiFi101.h>
 #include <ArduinoMqttClient.h>
+#include "Adafruit_Si7021.h"
 #include "secrets.h"
 
 const char BROKER[] = "10.0.0.94"; // using DNS did not work
@@ -8,6 +9,7 @@ char light_topic[] = "homeassistant/garden/sunlight";
 
 WiFiClient wifiClient;
 MqttClient mqttClient(wifiClient);
+Adafruit_Si7021 sensor = Adafruit_Si7021();
 
 void setup() {
   Serial.begin(115200);
@@ -30,6 +32,7 @@ void setup() {
       ;
     }
   }
+  sensor.begin();
 }
 
 void loop() {
@@ -47,10 +50,21 @@ void loop() {
 
   Serial.print("Avg:\t");
   Serial.println(average_resistance);
+  Serial.print("{\n\"resistance\": ");
+  Serial.print(average_resistance);
+  Serial.print(",\n\"temperature\": ");
+  Serial.print(sensor.readTemperature());
+  Serial.print(",\n\"humidity\": ");
+  Serial.println(sensor.readHumidity());
+  Serial.println("}");
 
   mqttClient.beginMessage(light_topic);
   mqttClient.print("{\n\"resistance\": ");
-  mqttClient.println(average_resistance);
+  mqttClient.print(average_resistance);
+  mqttClient.print(",\n\"temperature\": ");
+  mqttClient.print(sensor.readTemperature());
+  mqttClient.print(",\n\"humidity\": ");
+  mqttClient.println(sensor.readHumidity());
   mqttClient.print("}");
   mqttClient.endMessage();
 }
